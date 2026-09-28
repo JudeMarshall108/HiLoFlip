@@ -7,54 +7,26 @@
 
 import SwiftUI
 
-// This is the GameView. It calls on both CardView and TokenView. i have a columns constant (for the LazyVgrid), currentCards count, and isTokenHI bool.
+
 struct GameView: View {
-    let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
-    @State var currentCards: [Int] = []
-    @State var tokenSide: TokenSide = .hi
+    var game = HiLoFlipCardGame(playerNames: ["Player 1", "Player 2"])
     
-    // In the view body, we are displaying everything. ScrollView contains a ForEach loop to ensure I am displaying the correct number of cards in the LazyVGrid.
     var body: some View {
         ZStack {
             Color("GameViewGreen")
                 .ignoresSafeArea()
             VStack {
-                HStack {
-                    TokenView(side: tokenSide)
-                    shuffleButton
-                }
-                .padding(.horizontal)
-                .padding(.top)
-                ScrollView {
-                    LazyVGrid (columns : columns) {
-                        ForEach( currentCards, id: \.self) {
-                            number in CardView(number: number)
-                        }
-                    }
-                }
+                cardGrid(0)
+                topBar()
+                cardGrid(1)
             }
         }
-        .onAppear {
-            dealNewHand()
-        }
-    }
-    
-    // This function is what flips the token and deals out new, shuffled cards
-    private func dealNewHand() {
-        tokenSide = Bool.random() ? .hi : .lo
-        var deck = Array(1...100)
-        deck.shuffle()
-        currentCards = Array(deck.prefix(7))
     }
     
     // This variable is the button which calls on dealNewHand()
     var shuffleButton : some View {
         Button(action: {
-            dealNewHand()
+            game.resetGame()
         }) {
             ZStack {
                 RoundedRectangle(cornerRadius: 15)
@@ -64,6 +36,30 @@ struct GameView: View {
             }
         }
     }
+    
+    func topBar() -> some View {
+        HStack {
+            TokenView(side: game.isTokenHi ? .hi : .lo)
+            shuffleButton
+        }
+        .padding(.horizontal)
+        .padding(.top)
+    }
+    
+    func cardGrid(_ playerIndex: Int) -> some View {
+        ScrollView {
+            LazyVGrid (columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ]) {
+                ForEach( game.hand(for: game.players[playerIndex]), id: \.value) {
+                    card in CardView(card: card)
+                }
+            }
+        }
+    }
+    
 }
 
 #Preview {

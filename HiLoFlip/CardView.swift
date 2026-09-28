@@ -8,27 +8,21 @@
 import SwiftUI
 
 struct CardView: View {
-    let number: Int
-    @State private var face: CardFace = .faceUp
+    var card: HiLoGame.Card
     var body: some View {
-        Group {
-            if face == .faceUp {
-                faceUpView
-            } else {
-                faceDownView
-            }
+        if card.isFaceUp {
+            faceUpView
+        } else {
+            faceDownView
         }
-        .onTapGesture {
-            face = face.flipped
-        }
-    }	
+    }
     
     // This is the View for the back of the card
     private func cardBack() -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .frame(width: 100, height: 155)
-                .foregroundStyle(.black);
+                .foregroundStyle(.black)
             cardBackCircleBottom()
             cardBackCircleTop()
         }
@@ -67,21 +61,13 @@ struct CardView: View {
     private func cardFront() -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
-                .fill(colorForIndex(number))
+                .fill(colorForIndex(card.value))
                 .frame(width: 100, height: 155)
-            Circle()
-                .frame(width: 60)
-                .foregroundStyle(.black)
-            Text(String(number))
-                .foregroundStyle(Color.white)
-                .bold()
-                .font(.system(size: 35))
-            cornerSymbol(for: number)
+            cardFrontNumber()
+            cardFrontCorner()
                 .offset(x: 28, y: 54)
-                .frame(width: 28)
-            cornerSymbol(for: number)
+            cardFrontCorner()
                 .offset(x: -28, y: -54)
-                .frame(width: 28)
         }
     }
     
@@ -116,16 +102,32 @@ struct CardView: View {
         }
     }
     
+    func cardFrontCorner() -> some View {
+        ZStack {
+            cornerSymbol(for: card.value)
+                .frame(width: 28)
+        }
+    }
+    
+    func cardFrontNumber() -> some View {
+        ZStack {
+            Circle()
+                .frame(width: 60)
+                .foregroundStyle(.black)
+            Text(String(card.value))
+                .foregroundStyle(Color.white)
+                .bold()
+                .font(.system(size: 35))
+        }
+    }
+    
     // These two variables define what is face up view and what is face down view (seeing card front vs. card back)
-    var faceUpView : some View {
-        cardFront()
-    }
-    var faceDownView : some View {
-        cardBack()
-    }
+    var faceUpView: some View { cardFront() }
+    
+    var faceDownView: some View { cardBack() }
     
 }
 
 #Preview {
-    CardView(number: 40)
+    CardView(card: HiLoGame.Card(value: 40))
 }

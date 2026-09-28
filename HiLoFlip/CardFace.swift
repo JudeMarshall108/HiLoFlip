@@ -7,7 +7,9 @@
 
 import Foundation
 
-enum CardFace { case faceUp, faceDown
+enum CardFace {
+    case faceUp, faceDown
+    
     var flipped: CardFace {
         switch self {
         case .faceUp: return .faceDown

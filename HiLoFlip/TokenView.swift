@@ -12,18 +12,25 @@ struct TokenView: View {
     let side: TokenSide
     var body: some View {
         ZStack {
-            Circle()
-                .fill(.black)
-                .frame(width: 150, height: 150)
-            Circle()
-                .stroke(Color.white, lineWidth: 2)
-                .frame(width: 130, height: 130)
+            tokenCircle()
             Text(side.label)
                 .bold()
                 .foregroundStyle(Color.white)
                 .font(.system(size: 40))
         }
     }
+    
+    func tokenCircle() -> some View {
+        ZStack {
+            Circle()
+                .fill(.black)
+                .frame(width: 150, height: 150)
+            Circle()
+                .stroke(Color.white, lineWidth: 2)
+                .frame(width: 130, height: 130)
+        }
+    }
+    
 }
 
 #Preview {
