@@ -9,7 +9,9 @@ import SwiftUI
 
 
 struct GameView: View {
-    var game = HiLoFlipCardGame(playerNames: ["Player 1", "Player 2"])
+    
+    @State private var game = HiLoFlipCardGame(playerNames: ["Player 1", "Player 2"])
+    private let cardWidth: CGFloat = 100
     
     var body: some View {
         ZStack {
@@ -26,7 +28,9 @@ struct GameView: View {
     // This variable is the button which calls on dealNewHand()
     var shuffleButton : some View {
         Button(action: {
-            game.resetGame()
+            withAnimation(.easeInOut(duration: 0.4)) {
+                game.resetGame()
+            }
         }) {
             ZStack {
                 RoundedRectangle(cornerRadius: 15)
@@ -46,17 +50,18 @@ struct GameView: View {
         .padding(.top)
     }
     
-    func cardGrid(_ playerIndex: Int) -> some View {
+    private func cardGrid(_ playerIndex: Int) -> some View {
         ScrollView {
-            LazyVGrid (columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ]) {
-                ForEach( game.hand(for: game.players[playerIndex]), id: \.value) {
-                    card in CardView(card: card)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: cardWidth))]) {
+                ForEach(game.hand(for: game.players[playerIndex]), id: \.value) { card in
+                    CardView(card: card, width: cardWidth)
+                        .transition(.scale.combined(with: .opacity))
+                        .onTapGesture {
+                            game.flip(card)
+                        }
                 }
             }
+            .padding()
         }
     }
     

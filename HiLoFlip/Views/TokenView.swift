@@ -15,8 +15,9 @@ struct TokenView: View {
             tokenCircle()
             Text(side.label)
                 .bold()
-                .foregroundStyle(Color.white)
+                .foregroundStyle(.white)
                 .font(.system(size: 40))
+                .contentTransition(.opacity)
         }
     }
     

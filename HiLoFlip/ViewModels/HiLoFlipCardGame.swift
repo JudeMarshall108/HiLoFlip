@@ -15,10 +15,15 @@ class HiLoFlipCardGame {
     
     init(playerNames: [String]) {
         game = HiLoGame(playerNames: playerNames)
+        game.resetGame()
     }
     
     func resetGame() {
         game.resetGame()
+    }
+    
+    func flip(_ card: HiLoGame.Card) {
+        game.flip(card)
     }
     
     func hand(for player: HiLoGame.Player) -> [HiLoGame.Card] {

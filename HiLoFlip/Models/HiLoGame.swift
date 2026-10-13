@@ -25,6 +25,17 @@ struct HiLoGame {
         }
     }
     
+    mutating func flip(_ card: Card) {
+        for playerIndex in players.indices {
+            if let cardIndex = players[playerIndex].hand.firstIndex(
+                where: { $0.value == card.value }
+            ) {
+                players[playerIndex].hand[cardIndex].isFaceUp.toggle()
+                return
+            }
+        }
+    }
+    
     struct Player {
         private(set) var name: String
         fileprivate(set) var hand: [Card] = []
@@ -50,7 +61,7 @@ struct HiLoGame {
     
     mutating func resetGame() {
         isTokenHi = Bool.random()
-        deck = []
+        deck = (1...100).map { Card(value: $0) }.shuffled()
         for playerIndex in players.indices {
             players[playerIndex].hand = []
         }
