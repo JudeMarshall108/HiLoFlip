@@ -25,31 +25,10 @@ struct CardView: View {
         .animation(.easeInOut(duration: 0.5), value: card.isFaceUp)
     }
     
-    // This is the View for the back of the card
     private func cardBack() -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: width * 0.2)
-                .fill(.black)
-                .frame(width: size.width, height: size.height)
-            backCircle("LO")
-                .offset(x: -width * 0.18, y: -size.height * 0.23)
-            backCircle("HI")
-                .offset(x: width * 0.18, y: size.height * 0.23)
-        }
+        CardBackView(width: width)
     }
     
-    private func backCircle(_ title: String) -> some View {
-        ZStack {
-            Circle()
-                .stroke(.white, lineWidth: width * 0.01)
-            Text(title)
-                .foregroundStyle(.white)
-                .bold()
-                .font(.system(size: width * 0.2))
-        }
-        .frame(width: width * 0.5, height: width * 0.5)
-    }
-        
     //This is the View of the front of the card with the number and corner symbols
     private func cardFront() -> some View {
         ZStack {

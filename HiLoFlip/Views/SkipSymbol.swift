@@ -11,35 +11,33 @@ struct SkipSymbol: Shape {
     
     func path(in rect: CGRect) -> Path {
         let side = min(rect.width, rect.height)
-        let square = CGRect(x: rect.midX - side / 2, y: rect.midY - side / 2, width: side, height: side)
-        
+        let square = CGRect(x: rect.midX - side / 2, y: rect.midY - side / 2,
+                            width: side, height: side)
         var path = Path()
         path.addEllipse(in: square)
-        
-        let radius = side / 2
-        let angle = Angle(degrees: 45).radians
-        var slash = Path()
-        slash.move(to: CGPoint(x: square.midX - radius * cos(angle),
-                               y: square.midY - radius * sin(angle)))
-        slash.addLine(to: CGPoint(x: square.midX + radius * cos(angle),
-                                  y: square.midY + radius * sin(angle)))
-        path.addPath(slash)
-        return path.strokedPath(StrokeStyle(lineWidth: side * 0.15, lineCap: .round))
-            .scaled(byX: 0.5, y: 0.5, center: rect.center)
+        path.addPath(slash(in: square))
+        let outline = path.strokedPath(StrokeStyle(lineWidth: side * 0.15, lineCap: .round))
+        return scaled(outline, around: CGPoint(x: rect.midX, y: rect.midY))
     }
     
-}
-
-extension Path {
-    func scaled(byX x: CGFloat, y: CGFloat, center: CGPoint) -> Path {
-        applying(CGAffineTransform(scaleX: x, y: y).translatedBy(x: center.x, y: center.y))
+    private func slash(in square: CGRect) -> Path {
+        let radius = square.width / 2
+        let angle = Angle(degrees: 45).radians
+        var path = Path()
+        path.move(to: CGPoint(x: square.midX - radius * cos(angle),
+                             y: square.midY - radius * sin(angle)))
+        path.addLine(to: CGPoint(x: square.midX + radius * cos(angle),
+                                y: square.midY + radius * sin(angle)))
+        return path
     }
-}
-
-extension CGRect {
-    var center: CGPoint {
-        CGPoint(x: self.midX, y: self.midY)
+    
+    private func scaled(_ path: Path, around center: CGPoint) -> Path {
+        path.applying(
+            CGAffineTransform(scaleX: 0.5, y: 0.5)
+                .translatedBy(x: center.x, y: center.y)
+        )
     }
+    
 }
 
 #Preview {
