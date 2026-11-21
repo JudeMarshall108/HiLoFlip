@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum SpecialSymbol {
+enum SpecialSymbol: Codable {
     case tenPoint, skip, mustPlaySecond
 }

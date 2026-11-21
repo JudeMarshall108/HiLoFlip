@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct HiLoGame {
+struct HiLoGame: Codable {
     private(set) var deck: [Card] = []
     private(set) var players: [Player] = []
     private(set) var discardPile: [Card] = []
@@ -71,6 +71,7 @@ struct HiLoGame {
         for playerIndex in players.indices {
             players[playerIndex].hand = []
             players[playerIndex].collectedCards = []
+            players[playerIndex].score = 0
         }
     }
     
@@ -81,7 +82,7 @@ struct HiLoGame {
         recoveryStep = isTokenHi == previousSide ? .draw : .playing
     }
     
-    struct Card {
+    struct Card: Codable {
         let value: Int
         fileprivate(set) var isFaceUp: Bool = true
         var isSpecialCard: Bool { isTenPointCard || isSkipCard || isMustPlaySecondCard }
@@ -93,17 +94,29 @@ struct HiLoGame {
         }
     }
     
-    struct Player {
+    struct Player: Codable {
         fileprivate(set) var name: String
         fileprivate(set) var hand: [Card] = []
         fileprivate(set) var collectedCards: [Card] = []
-        private(set) var score: Int = 0
+        fileprivate(set) var score: Int = 0
         init(name: String) {
             self.name = name
         }
     }
     
-    enum RecoveryStep {
+    private mutating func scoreRound() {
+        guard let winnerIndex = winnerIndex else { return }
+        players[winnerIndex].collectedCards.append(contentsOf: discardPile)
+        discardPile = []
+        for playerIndex in players.indices {
+            players[playerIndex].score = players[playerIndex].collectedCards.reduce(0) { total, card in
+                total + (card.isTenPointCard ? 10 : 1)
+            }
+        }
+        players[winnerIndex].score += 10
+    }
+    
+    enum RecoveryStep: Codable {
         case playing
         case draw
         case reset
@@ -181,7 +194,10 @@ struct HiLoGame {
     }
     
     private mutating func finishTurn(after card: Card) {
-        guard !isRoundOver else { return }
+        guard !isRoundOver else {
+            scoreRound()
+            return
+        }
         if card.isSkipCard {
             _ = drawCard(for: opponentIndex)
         }

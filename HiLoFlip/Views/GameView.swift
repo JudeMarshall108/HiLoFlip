@@ -11,10 +11,12 @@ import SwiftUI
 struct GameView: View {
     
     let game: HiLoFlipCardGame
+    @AppStorage("showDeckCount") private var showDeckCount = true
     @State private var discardFrame: CGRect = .zero
     @State private var draggedCard: HiLoGame.Card? = nil
     @State private var dragStartFrame: CGRect = .zero
     @State private var dragTranslation: CGSize = .zero
+    @State private var showRoundOver = false
     private let cardWidth: CGFloat = 80
     @Environment(\.dismiss) private var dismiss
     @State private var showQuitConfirmation = false
@@ -39,7 +41,7 @@ struct GameView: View {
         draggedCard?.value
     }
     
-    var body: some View {
+    private var gameContent: some View {
         ZStack {
             Color("GameViewGreen")
                 .ignoresSafeArea()
@@ -49,6 +51,16 @@ struct GameView: View {
         .coordinateSpace(.named("gameBoard"))
         .navigationBarBackButtonHidden(true)
         .toolbar { quitToolbar }
+    }
+    
+    var body: some View {
+        gameContent
+            .onChange(of: game.isRoundOver, initial: true) { _, isOver in
+                showRoundOver = isOver
+            }
+            .alert("Round Over", isPresented: $showRoundOver) {
+                Button("Home") { dismiss() }
+            } message: { Text(roundOverMessage) }
     }
     
     private func quitButton() -> some View {
@@ -76,9 +88,11 @@ struct GameView: View {
     private func deckView() -> some View {
         VStack(spacing: 4) {
             drawButton()
-            Text(game.canDrawCard ? "Tap to draw" : "\(game.deckCount) cards")
-                .font(.caption)
-                .foregroundStyle(.white)
+            if showDeckCount || game.canDrawCard {
+                Text(game.canDrawCard ? "Tap to draw" : "\(game.deckCount) cards")
+                    .font(.caption)
+                    .foregroundStyle(.white)
+            }
         }
     }
     
@@ -236,6 +250,14 @@ struct GameView: View {
         playerIndex == game.currentPlayerIndex
             && !game.isRoundOver
             && (draggedCardValue == nil || draggedCardValue == card.value)
+    }
+    
+    private var roundOverMessage: String {
+        guard let winnerIndex = game.winnerIndex else { return "" }
+        let scores = game.players.map {
+            "\($0.name): \($0.score) points"
+        }.joined(separator: "\n")
+        return "\(game.players[winnerIndex].name) wins!\n\(scores)"
     }
     
 }

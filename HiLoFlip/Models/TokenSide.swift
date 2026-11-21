@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum TokenSide {
+enum TokenSide: Codable {
     case hi, lo
     
     var label: String {

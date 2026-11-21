@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CardFace {
+enum CardFace: Codable {
     case faceUp, faceDown
     
     var flipped: CardFace {

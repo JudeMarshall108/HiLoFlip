@@ -9,7 +9,11 @@ import Foundation
 
 @Observable
 class HiLoFlipCardGame {
-    private var game: HiLoGame
+    private var game: HiLoGame {
+        didSet {
+            saveGame()
+        }
+    }
     var players: [HiLoGame.Player] { game.players }
     var isTokenHi: Bool { game.isTokenHi }
     var currentPlayerIndex: Int { game.currentPlayerIndex }
@@ -17,6 +21,9 @@ class HiLoFlipCardGame {
     var deckCount: Int { game.deck.count }
     var winnerIndex: Int? { game.winnerIndex }
     var isRoundOver: Bool { game.isRoundOver }
+    var leaderboard: LeaderboardService = LocalLeaderboardService()
+    private static let saveURL = URL.documentsDirectory
+        .appending(path: "savedGame.json")
     
     var playerOneName: String {
         get {
@@ -42,8 +49,15 @@ class HiLoFlipCardGame {
     func tossToken() { game.tossToken() }
     
     init(playerNames: [String]) {
-        game = HiLoGame(playerNames: playerNames)
-        game.resetGame()
+        if let data = try? Data(contentsOf: Self.saveURL),
+           let savedGame = try? JSONDecoder().decode(HiLoGame.self, from: data) {
+            game = savedGame
+        } else {
+            var newGame = HiLoGame(playerNames: playerNames)
+            newGame.resetGame()
+            game = newGame
+        }
+        saveGame()
     }
     
     var canDrawCard: Bool {
@@ -75,9 +89,19 @@ class HiLoFlipCardGame {
     }
     
     func play(_ card: HiLoGame.Card) -> Bool {
-        guard game.canPlay(card) else {
-            return false
+        guard game.play(card) else { return false }
+        if game.isRoundOver {
+            for player in game.players {
+                let entry = LeaderboardEntry(playerName: player.name,
+                                             score: player.score,
+                                             createdAt: Date().ISO8601Format())
+                leaderboard.record(entry)
+            }
         }
-        return game.play(card)
+        return true
+    }
+    
+    private func saveGame() {
+        _ = try? JSONEncoder().encode(game).write(to: Self.saveURL)
     }
 }
